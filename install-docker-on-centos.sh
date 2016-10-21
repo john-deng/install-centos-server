@@ -4,10 +4,12 @@ if [ "$STORAGE_DEVICE" == "" ]; then
 	STORAGE_DEVICE=/dev/sdb
 fi	
 
-if [ $(lsblk | grep sdb1 | wc -l) == 0 ]; then
+if [ $(lsblk | grep sdb | wc -l) == 0 ]; then
 	echo "${STORAGE_DEVICE} is not exist!"
 	exit
 fi
+
+REMOVE_DOCKER="yum list installed | grep docker | awk -v N=1 '{print $N}' | xargs yum -y remove"
 
 if [ $(lvs | grep docker-pool | grep docker-vg | wc -l) == 0 ]; then
 echo "setup direct disk mode"
@@ -29,6 +31,7 @@ t
 w
 EOF
 
+${REMOVE_DOCKER}
 yum -y install docker
 
 pvcreate ${STORAGE_DEVICE}1
@@ -70,8 +73,8 @@ EOF
 
 fi
 
-yum list installed | grep docker | awk -v N=1 '{print $N}' | xargs yum -y remove
 
+${REMOVE_DOCKER}
 systemctl stop docker
 systemctl disable docker.service
 

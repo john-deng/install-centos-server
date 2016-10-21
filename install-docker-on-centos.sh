@@ -10,6 +10,9 @@ if [ $(lsblk | grep sdb1 | wc -l) == 0 ]; then
 fi
 
 if [ $(lvs | grep docker-pool | grep docker-vg | wc -l) == 0 ]; then
+echo "setup direct disk mode"
+echo "-------------------------------------------------------------------------"
+
 
 fdisk ${STORAGE_DEVICE} <<EOF
 d
@@ -57,7 +60,7 @@ yum -y remove docker-common.x86_64
 
 yum -y update
 
-if [ $(cat /etc/yum.repos.d/docker.repo | grep ) ]
+if [ $(cat /etc/yum.repos.d/docker.repo | grep yum.dockerproject.org | wc -l ) == 0 ]; then
 
 tee /etc/yum.repos.d/docker.repo <<-'EOF'
 [dockerrepo]
@@ -68,15 +71,30 @@ gpgcheck=1
 gpgkey=https://yum.dockerproject.org/gpg
 EOF
 
+fi
+
+echo "installing docker ... "
+echo "-------------------------------------------------------------------------"
 yum -y install docker-engine
 
+echo "replacing docker.service"
+echo "-------------------------------------------------------------------------"
 cp docker.service /usr/lib/systemd/system/
 
+echo "reload docker.service"
+echo "-------------------------------------------------------------------------"
 systemctl daemon-reload
 
+echo "enable docker.service"
+echo "-------------------------------------------------------------------------"
 systemctl enable docker.service
 
+echo "start docker.service"
+echo "-------------------------------------------------------------------------"
 systemctl start docker
 
+echo "show docker info"
+echo "-------------------------------------------------------------------------"
 docker info
+
 

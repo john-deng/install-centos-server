@@ -72,6 +72,8 @@ gpgkey=https://yum.dockerproject.org/gpg
 EOF
 
 fi
+systemctl stop docker
+systemctl disable docker.service
 
 echo "installing docker ... "
 echo "-------------------------------------------------------------------------"

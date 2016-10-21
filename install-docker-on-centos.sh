@@ -9,6 +9,8 @@ if [ ! -f ${STORAGE_DEVICE} ]; then
 	exit
 fi
 
+if [ $(lvs | grep docker-pool | grep docker-vg | wc -l) == 0 ]; then
+
 fdisk ${STORAGE_DEVICE} <<EOF
 d
 
@@ -40,9 +42,41 @@ DATA_SIZE=70%FREE
 
 fi
 
+systemctl stop docker
+
 rm -rf /var/lib/docker
 
 /usr/bin/docker-storage-setup
 
 lvs
+
+fi # if [ $(lvs | grep docker-pool | grep docker-vg | wc -l) == 0 ]; then
+
+yum -y erase docker-selinux docker
+yum -y remove docker-common.x86_64
+
+yum -y update
+
+if [ $(cat /etc/yum.repos.d/docker.repo | grep ) ]
+
+tee /etc/yum.repos.d/docker.repo <<-'EOF'
+[dockerrepo]
+name=Docker Repository
+baseurl=https://yum.dockerproject.org/repo/main/centos/7/
+enabled=1
+gpgcheck=1
+gpgkey=https://yum.dockerproject.org/gpg
+EOF
+
+yum -y install docker-engine
+
+cp docker.service /usr/lib/systemd/system/
+
+systemctl daemon-reload
+
+systemctl enable docker.service
+
+systemctl start docker
+
+docker info
 

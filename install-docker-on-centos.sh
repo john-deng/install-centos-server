@@ -53,10 +53,10 @@ rm -rf /var/lib/docker
 
 lvs
 
-fi # if [ $(lvs | grep docker-pool | grep docker-vg | wc -l) == 0 ]; then
-
 yum -y erase docker-selinux docker
 yum -y remove docker-common.x86_64
+
+fi # if [ $(lvs | grep docker-pool | grep docker-vg | wc -l) == 0 ]; then
 
 yum -y update
 

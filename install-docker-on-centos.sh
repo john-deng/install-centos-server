@@ -4,7 +4,7 @@ if [ "$STORAGE_DEVICE" == "" ]; then
 	STORAGE_DEVICE=/dev/sdb
 fi	
 
-if [ ! -f ${STORAGE_DEVICE} ]; then
+if [ $(lsblk | grep sdb1 | wc -l) == 0 ]; then
 	echo "${STORAGE_DEVICE} is not exist!"
 	exit
 fi

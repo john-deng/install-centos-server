@@ -53,9 +53,6 @@ rm -rf /var/lib/docker
 
 lvs
 
-yum -y erase docker-selinux docker
-yum -y remove docker-common.x86_64
-
 fi # if [ $(lvs | grep docker-pool | grep docker-vg | wc -l) == 0 ]; then
 
 yum -y update
@@ -72,6 +69,9 @@ gpgkey=https://yum.dockerproject.org/gpg
 EOF
 
 fi
+
+yum list installed | grep docker | awk -v N=1 '{print $N}' | xargs yum -y remove
+
 systemctl stop docker
 systemctl disable docker.service
 

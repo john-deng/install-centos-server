@@ -55,7 +55,7 @@ lvs
 
 fi # if [ $(lvs | grep docker-pool | grep docker-vg | wc -l) == 0 ]; then
 
-yum -y update
+
 
 if [ $(cat /etc/yum.repos.d/docker.repo | grep tsinghua | wc -l ) == 0 ]; then
 
@@ -77,6 +77,7 @@ systemctl disable docker.service
 
 echo "installing docker ... "
 echo "-------------------------------------------------------------------------"
+yum -y update
 yum makecache
 yum -y install docker-engine
 

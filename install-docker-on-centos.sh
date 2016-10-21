@@ -80,6 +80,7 @@ yum -y install docker-engine
 echo "replacing docker.service"
 echo "-------------------------------------------------------------------------"
 cp docker.service /usr/lib/systemd/system/
+cp docker-storage /etc/sysconfig/
 
 echo "reload docker.service"
 echo "-------------------------------------------------------------------------"

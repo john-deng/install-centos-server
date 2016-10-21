@@ -57,15 +57,15 @@ fi # if [ $(lvs | grep docker-pool | grep docker-vg | wc -l) == 0 ]; then
 
 yum -y update
 
-if [ $(cat /etc/yum.repos.d/docker.repo | grep yum.dockerproject.org | wc -l ) == 0 ]; then
+if [ $(cat /etc/yum.repos.d/docker.repo | grep tsinghua | wc -l ) == 0 ]; then
 
 tee /etc/yum.repos.d/docker.repo <<-'EOF'
 [dockerrepo]
 name=Docker Repository
-baseurl=https://yum.dockerproject.org/repo/main/centos/7/
+baseurl=https://mirrors.tuna.tsinghua.edu.cn/docker/yum/repo/centos7
 enabled=1
 gpgcheck=1
-gpgkey=https://yum.dockerproject.org/gpg
+gpgkey=https://mirrors.tuna.tsinghua.edu.cn/docker/yum/gpg
 EOF
 
 fi
@@ -77,6 +77,7 @@ systemctl disable docker.service
 
 echo "installing docker ... "
 echo "-------------------------------------------------------------------------"
+yum makecache
 yum -y install docker-engine
 
 echo "replacing docker.service"

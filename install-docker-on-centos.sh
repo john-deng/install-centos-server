@@ -107,3 +107,6 @@ systemctl start docker
 
 log "show docker info"
 docker info
+
+log "Installed $(docker -v)"
+

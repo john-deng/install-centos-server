@@ -1,3 +1,14 @@
+#!/bin/bash
+
+function log() {
+	echo "[LINE: ${BASH_LINENO[*]}] $1"
+}
+
+function remove_docker() {
+	log "removing docker ..."
+	yum list installed | grep docker | awk -v N=1 '{print $N}' | xargs yum -y remove
+	log "docker was removed"
+}
 
 STORAGE_DEVICE=$1
 if [ "$STORAGE_DEVICE" == "" ]; then
@@ -5,16 +16,13 @@ if [ "$STORAGE_DEVICE" == "" ]; then
 fi	
 
 if [ $(lsblk | grep sdb | wc -l) == 0 ]; then
-	echo "${STORAGE_DEVICE} is not exist!"
+	log "${STORAGE_DEVICE} is not exist!"
 	exit
 fi
 
-REMOVE_DOCKER="yum list installed | grep docker | awk -v N=1 '{print $N}' | xargs yum -y remove"
-
 if [ $(lvs | grep docker-pool | grep docker-vg | wc -l) == 0 ]; then
-echo "setup direct disk mode"
+log "setup direct disk mode"
 echo "-------------------------------------------------------------------------"
-
 
 fdisk ${STORAGE_DEVICE} <<EOF
 d
@@ -31,7 +39,7 @@ t
 w
 EOF
 
-${REMOVE_DOCKER}
+remove_docker
 yum -y install docker
 
 pvcreate ${STORAGE_DEVICE}1
@@ -40,11 +48,11 @@ vgcreate docker-vg ${STORAGE_DEVICE}1
 
 if [ $(cat /etc/sysconfig/docker-storage-setup | grep docker-vg | wc -l) == 0  ]; then
 
-echo '
+tee /etc/sysconfig/docker-storage-setup <<-'EOF'
 VG=docker-vg
 SETUP_LVM_THIN_POOL=yes
 DATA_SIZE=70%FREE
-' >> /etc/sysconfig/docker-storage-setup
+EOF
 
 fi
 
@@ -58,7 +66,8 @@ lvs
 
 fi # if [ $(lvs | grep docker-pool | grep docker-vg | wc -l) == 0 ]; then
 
-
+log "reinstall docker-engine ..."
+echo "-------------------------------------------------------------------------"
 
 if [ $(cat /etc/yum.repos.d/docker.repo | grep tsinghua | wc -l ) == 0 ]; then
 
@@ -73,36 +82,28 @@ EOF
 
 fi
 
+remove_docker
 
-${REMOVE_DOCKER}
 systemctl stop docker
 systemctl disable docker.service
 
-echo "installing docker ... "
-echo "-------------------------------------------------------------------------"
+log "installing docker ... "
 yum -y update
 yum makecache
 yum -y install docker-engine
 
-echo "replacing docker.service"
-echo "-------------------------------------------------------------------------"
+log "replacing docker.service"
 cp docker.service /usr/lib/systemd/system/
 cp docker-storage /etc/sysconfig/
 
-echo "reload docker.service"
-echo "-------------------------------------------------------------------------"
+log "reload docker.service"
 systemctl daemon-reload
 
-echo "enable docker.service"
-echo "-------------------------------------------------------------------------"
+log "enable docker.service"
 systemctl enable docker.service
 
-echo "start docker.service"
-echo "-------------------------------------------------------------------------"
+log "start docker.service"
 systemctl start docker
 
-echo "show docker info"
-echo "-------------------------------------------------------------------------"
+log "show docker info"
 docker info
-
-

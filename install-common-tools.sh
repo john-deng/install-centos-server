@@ -23,3 +23,13 @@ log "install shadowsocks"
 yum install python-setuptools
 easy_install pip
 pip install shadowsocks
+
+log "install proxychains-ng"
+git clone git@github.com:john-deng/proxychains-ng.git
+yum -y install gcc g++
+pushd proxychains-ng
+make && make install
+cp src/proxychains.conf /etc/
+popd
+
+log "installed common tools"

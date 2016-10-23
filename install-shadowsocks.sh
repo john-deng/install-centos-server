@@ -8,7 +8,7 @@ easy_install pip
 pip install shadowsocks
 
 log "install proxychains-ng"
-git clone https://github.com/john-deng/install-centos-server.git
+git clone https://github.com/john-deng/proxychains-ng.git
 yum -y install gcc g++
 pushd proxychains-ng
 make && make install

@@ -24,17 +24,4 @@ log "install zsh and oh-my-zsh"
 yum -y install zsh
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 
-log "install shadowsocks"
-yum -y install python-setuptools
-easy_install pip
-pip install shadowsocks
-
-log "install proxychains-ng"
-git clone git@github.com:john-deng/proxychains-ng.git
-yum -y install gcc g++
-pushd proxychains-ng
-make && make install
-cp src/proxychains.conf /etc/
-popd
-
 log "installed common tools"

@@ -2,6 +2,9 @@
 
 source log.sh
 
+sed -i s/.50/.${}/g /etc/sysconfig/network-scripts/ifcfg-en
+
+
 log "switch to aliyun yum source"
 pushd /etc/yum.repos.d
 
@@ -16,3 +19,7 @@ log "install zsh and oh-my-zsh"
 yum install zsh
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 
+log "install shadowsocks"
+yum install python-setuptools
+easy_install pip
+pip install shadowsocks

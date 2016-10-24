@@ -82,7 +82,10 @@ cat config/cluster-ip.conf | { while read server; do
 
 	ssh-copy-id -i ${HOME}/.ssh/id_rsa.pub ${IP}
 
-	echo "${SERVER_NAME}.openshift.${NAMESPACE}.local openshift_node_labels=\"{'region': 'primary', 'zone': '$SERVER_NAME'}\"" >> /etc/ansible/hosts
+	if [ $(echo $SERVER_NAME | grep node | wc -l) == 1 ];
+		log "added node to /etc/ansible/hosts"
+		echo "${SERVER_NAME}.openshift.${NAMESPACE}.local openshift_node_labels=\"{'region': 'primary', 'zone': '$SERVER_NAME'}\"" >> /etc/ansible/hosts
+    fi
         
     done
 } 

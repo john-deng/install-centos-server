@@ -3,6 +3,8 @@
 
 source log.sh
 
+DOCKER_VERSION=1.10.3
+
 function remove_docker() {
 	log "removing docker ..."
 	yum list installed | grep docker | awk -v N=1 '{print $N}' | xargs yum -y remove
@@ -81,20 +83,21 @@ EOF
 
 fi
 
-remove_docker
 
 systemctl stop docker
 systemctl disable docker.service
+remove_docker
 
 log "installing docker ... "
 yum -y update
 yum makecache
-yum -y install docker-engine
 
-log "replacing docker.service"
-yes | cp docker.service /usr/lib/systemd/system/
-yes | cp docker-storage /etc/sysconfig/
-yes | cp docker /etc/sysconfig/
+yum -y install docker-${DOCKER_VERSION}
+
+#log "replacing docker.service"
+#yes | cp docker.service /usr/lib/systemd/system/
+#yes | cp docker-storage /etc/sysconfig/
+#yes | cp docker /etc/sysconfig/
 
 log "reload docker.service"
 systemctl daemon-reload

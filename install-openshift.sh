@@ -6,6 +6,7 @@ NAMESPACE=$1
 if [ "$NAMESPACE" == "" ]; then
 	NAMESPACE=vpclub
 fi
+export NAMESPACE
 
 log "check prerequisites ..."
 
@@ -84,9 +85,6 @@ cat config/cluster-ip.conf | awk '{print $1;}' | { while read server; do
 
 	ssh-copy-id -i ~/.ssh/id_rsa.pub $ip
 
-	if [ "${SERVER_NAME}" == "master" ]; then
-
-	fi
 	echo "${ANSIBLE_SERVERS}\n${SERVER_NAME}.openshift.${NAMESPACE}.local openshift_node_labels=\"{'region': 'primary', 'zone': '$SERVER_NAME'}\"" >> /etc/ansible/hosts
         
     done

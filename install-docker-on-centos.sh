@@ -95,9 +95,9 @@ yum makecache
 yum -y install docker-${DOCKER_VERSION}
 
 #log "replacing docker.service"
-#yes | cp docker.service /usr/lib/systemd/system/
-#yes | cp docker-storage /etc/sysconfig/
-#yes | cp docker /etc/sysconfig/
+yes | cp docker.service /usr/lib/systemd/system/
+yes | cp docker-storage /etc/sysconfig/
+yes | cp docker /etc/sysconfig/
 
 log "reload docker.service"
 systemctl daemon-reload

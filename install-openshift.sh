@@ -2,11 +2,8 @@
 
 source log.sh
 
-NAMESPACE=$1
-if [ "$NAMESPACE" == "" ]; then
-	NAMESPACE=vpclub
-fi
-export NAMESPACE
+NAMESPACE=vpclub
+echo $NAMESPACE
 
 log "check prerequisites ..."
 
@@ -35,16 +32,13 @@ if [ $(getenforce | grep "Enforcing" | wc -l) == 0 ]; then
 	exit
 fi
 
-yum -y install wget git net-tools bind-utils iptables-services bridge-utils bash-completion
-
-yum -y install NetworkManager
+yum -y install wget git net-tools bind-utils iptables-services bridge-utils bash-completion pyOpenSSL NetworkManager
 
 if [ $(systemctl status NetworkManager | grep "active (running)" | wc -l) == 0 ]; then
 	log "please make sure NetworkManager is running."
 	exit
 fi
 
-yum -y install pyOpenSSL
 rm -rf /etc/ansible/hosts
 
 tee /etc/ansible/hosts <<-'EOF'
@@ -60,32 +54,35 @@ ansible_ssh_user=root
 deployment_type=origin
  
 [masters]
-master.openshift.${NAMESPACE}.local
+master.openshift.vpclub.local
  
 # host group for etcd
 [etcd]
-etcd.openshift.${NAMESPACE}.local
+etcd.openshift.vpclub.local
  
 # host group for nodes, includes region info
 [nodes]
-master.openshift.${NAMESPACE}.local openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+master.openshift.vpclub.local openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
 EOF
 
+log "iterate servers"
+
 ANSIBLE_SERVERS=
-cat config/cluster-ip.conf | awk '{print $1;}' | { while read server; do
+cat config/cluster-ip.conf | { while read server; do
+	echo $server
 	IP=$(echo $server | awk '{print $1;}')
 	SERVER_NAME=$(echo $server | awk '{print $2;}')
 	HOST_ITEM="${IP} ${SERVER_NAME}.openshift.${NAMESPACE}.local"
-
+	echo $HOST_ITEM
 
 	echo "add ${IP} ${SERVER_NAME} to trust list"
 	if [ $(cat /etc/hosts | grep "${HOST_ITEM}" | wc -l) == 0 ]; then
 		echo $HOST_ITEM >> /etc/hosts
 	fi
 
-	ssh-copy-id -i ~/.ssh/id_rsa.pub $ip
+	ssh-copy-id -i ${HOME}/.ssh/id_rsa.pub ${IP}
 
-	echo "${ANSIBLE_SERVERS}\n${SERVER_NAME}.openshift.${NAMESPACE}.local openshift_node_labels=\"{'region': 'primary', 'zone': '$SERVER_NAME'}\"" >> /etc/ansible/hosts
+	echo "${SERVER_NAME}.openshift.${NAMESPACE}.local openshift_node_labels=\"{'region': 'primary', 'zone': '$SERVER_NAME'}\"" >> /etc/ansible/hosts
         
     done
 } 

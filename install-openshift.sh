@@ -9,7 +9,7 @@ fi
 
 log "check prerequisites ..."
 
-if [ $(more /etc/redhat-release | grep "CentOS Linux release 7" | wc -l) ]; then
+if [ $(more /etc/redhat-release | grep "CentOS Linux release 7" | wc -l) == 0 ]; then
 	log "This installation script is for CentOS 7.x only"
 	exit
 fi
@@ -92,7 +92,9 @@ cat config/cluster-ip.conf | awk '{print $1;}' | { while read server; do
     done
 } 
 
-proxychains4 git clone https://github.com/openshift/openshift-ansible
+if [ ! -d ./openshift-ansible ]; then
+	proxychains4 git clone https://github.com/openshift/openshift-ansible
+fi
 
 ansible all -m ping
 

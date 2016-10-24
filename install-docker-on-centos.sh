@@ -1,8 +1,7 @@
 #!/bin/bash
 
-function log() {
-	echo "[LINE: ${BASH_LINENO[*]}] $1"
-}
+
+source log.sh
 
 function remove_docker() {
 	log "removing docker ..."
@@ -93,8 +92,9 @@ yum makecache
 yum -y install docker-engine
 
 log "replacing docker.service"
-cp docker.service /usr/lib/systemd/system/
-cp docker-storage /etc/sysconfig/
+yes | cp docker.service /usr/lib/systemd/system/
+yes | cp docker-storage /etc/sysconfig/
+yes | cp docker /etc/sysconfig/
 
 log "reload docker.service"
 systemctl daemon-reload

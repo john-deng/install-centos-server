@@ -1,1 +1,3 @@
 proxychains-ng/
+openshift-ansible/
+*.log

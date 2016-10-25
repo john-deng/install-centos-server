@@ -47,24 +47,6 @@ pvcreate ${STORAGE_DEVICE}1
 
 vgcreate docker-vg ${STORAGE_DEVICE}1
 
-if [ $(cat /etc/sysconfig/docker-storage-setup | grep docker-vg | wc -l) == 0  ]; then
-
-tee /etc/sysconfig/docker-storage-setup <<-'EOF'
-VG=docker-vg
-SETUP_LVM_THIN_POOL=yes
-DATA_SIZE=70%FREE
-EOF
-
-fi
-
-systemctl stop docker
-
-rm -rf /var/lib/docker
-
-/usr/bin/docker-storage-setup
-
-lvs
-
 fi # if [ $(lvs | grep docker-pool | grep docker-vg | wc -l) == 0 ]; then
 
 log "reinstall docker-engine ..."
@@ -82,7 +64,6 @@ gpgkey=https://mirrors.tuna.tsinghua.edu.cn/docker/yum/gpg
 EOF
 
 fi
-
 
 systemctl stop docker
 systemctl disable docker.service
@@ -107,6 +88,24 @@ systemctl enable docker.service
 
 log "start docker.service"
 systemctl start docker
+
+if [ $(cat /etc/sysconfig/docker-storage-setup | grep docker-vg | wc -l) == 0  ]; then
+
+tee /etc/sysconfig/docker-storage-setup <<-'EOF'
+VG=docker-vg
+SETUP_LVM_THIN_POOL=yes
+DATA_SIZE=70%FREE
+EOF
+
+systemctl stop docker
+
+rm -rf /var/lib/docker
+
+/usr/bin/docker-storage-setup
+
+lvs
+
+fi # if [ $(cat /etc/sysconfig/docker-storage-setup | grep docker-vg | wc -l) == 0  ]; then
 
 log "show docker info"
 docker info

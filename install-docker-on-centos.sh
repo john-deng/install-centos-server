@@ -89,6 +89,11 @@ systemctl enable docker.service
 log "start docker.service"
 systemctl start docker
 
+if [ "$?" != 0 ]; then
+	log "Failed to start docker"
+	exit
+fi
+
 if [ $(cat /etc/sysconfig/docker-storage-setup | grep docker-vg | wc -l) == 0  ]; then
 
 tee /etc/sysconfig/docker-storage-setup <<-'EOF'

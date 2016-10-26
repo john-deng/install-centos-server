@@ -1,8 +1,9 @@
 #!/bin/bash
 
 source log.sh
+source clap.sh
 
-DOCKER_VERSION=1.10.3
+echo $CMD_LINE
 
 function remove_docker() {
 	log "disable docker service"
@@ -17,7 +18,7 @@ function remove_docker() {
 	log "docker was removed"
 }
 
-STORAGE_DEVICE=$1
+STORAGE_DEVICE=$storage
 if [ "$STORAGE_DEVICE" == "" ]; then
 	STORAGE_DEVICE=/dev/sdb
 fi	
@@ -26,6 +27,9 @@ if [ $(lsblk | grep sdb | wc -l) == 0 ]; then
 	log "${STORAGE_DEVICE} is not exist!"
 	exit
 fi
+
+lvremove /dev/mapper/docker--vg-docker--pool
+vgremove docker-vg
 
 if [ $(lvs | grep docker-pool | grep docker-vg | wc -l) == 0 ]; then
 log "setup direct disk mode"
@@ -46,8 +50,12 @@ t
 w
 EOF
 
-remove_docker
-yum -y install docker
+if [ "$all" == "all" ]
+	yum -y update
+	yum makecache
+	remove_docker
+	yum -y install docker
+fi
 
 pvcreate ${STORAGE_DEVICE}1
 
@@ -55,36 +63,7 @@ vgcreate docker-vg ${STORAGE_DEVICE}1
 
 fi # if [ $(lvs | grep docker-pool | grep docker-vg | wc -l) == 0 ]; then
 
-log "reinstall docker-engine ..."
-echo "-------------------------------------------------------------------------"
-
-if [ $(cat /etc/yum.repos.d/docker.repo | grep tsinghua | wc -l ) == 0 ]; then
-
-tee /etc/yum.repos.d/docker.repo <<-'EOF'
-[dockerrepo]
-name=Docker Repository
-baseurl=https://mirrors.tuna.tsinghua.edu.cn/docker/yum/repo/centos7
-enabled=1
-gpgcheck=1
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/docker/yum/gpg
-EOF
-
-
-
-fi
-
-remove_docker
-
-log "installing docker ... "
-yum -y update
-yum makecache
-
-yum -y install docker-${DOCKER_VERSION}
-
-#log "replacing docker.service"
-#yes | cp docker.service /usr/lib/systemd/system/
-#yes | cp docker-storage /etc/sysconfig/
-yes | cp docker /etc/sysconfig/
+sed -i '/OPTIONS=.*/c\OPTIONS="--selinux-enabled --insecure-registry 172.30.0.0/16"' /etc/sysconfig/docker
 
 if [ $(cat /etc/sysconfig/docker-storage-setup | grep docker-vg | wc -l) == 0  ]; then
 
@@ -104,7 +83,6 @@ rm -rf /var/lib/docker
 /usr/bin/docker-storage-setup
 
 lvs
-
 
 log "reload docker.service"
 systemctl daemon-reload

@@ -50,7 +50,7 @@ t
 w
 EOF
 
-if [ "$all" == "all" ]
+if [ "$all" == "all" ]; then
 	yum -y update
 	yum makecache
 	remove_docker

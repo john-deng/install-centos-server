@@ -4,5 +4,8 @@
   become: no
   gather_facts: no
   tasks:
-  - git: http://192.168.1.22:8022/deployment/install-centos-server.git dest=/root/install-docker-on-centos refspec=+refs/pull/*:refs/heads/*
-  - script: /root/install-centos-server/install-docker-on-centos.sh
+  - name: fetch from git
+    git:
+      repo: http://192.168.1.22:8022/deployment/install-centos-server.git
+      dest: /root/install
+  - script: /root/install/clap.sh # install-docker-on-centos.sh

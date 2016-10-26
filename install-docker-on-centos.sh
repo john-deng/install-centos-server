@@ -1,11 +1,17 @@
 #!/bin/bash
 
-
 source log.sh
 
 DOCKER_VERSION=1.10.3
 
 function remove_docker() {
+	log "disable docker service"
+	systemctl stop docker
+	systemctl disable docker.service
+
+	rm -rf /var/lib/docker
+	rm -rf /run/docker.sock
+
 	log "removing docker ..."
 	yum list installed | grep docker | awk -v N=1 '{print $N}' | xargs yum -y remove
 	log "docker was removed"
@@ -63,10 +69,10 @@ gpgcheck=1
 gpgkey=https://mirrors.tuna.tsinghua.edu.cn/docker/yum/gpg
 EOF
 
+
+
 fi
 
-systemctl stop docker
-systemctl disable docker.service
 remove_docker
 
 log "installing docker ... "

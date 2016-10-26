@@ -56,9 +56,6 @@ function showVersion()
 }
 
 ###############################################################################
-
-showVersion
-
 # Parse the command line
 CMD_LINE=${0##*/}
 while [ "$#" != "0" ]; do
@@ -98,3 +95,7 @@ while [ "$#" != "0" ]; do
 done
 export CMD_LINE
 ###############################################################################
+
+#showVersion
+echo "<clap 1.0.0>"
+

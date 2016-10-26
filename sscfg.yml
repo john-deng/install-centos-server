@@ -1,0 +1,9 @@
+---
+- include: fetch-scripts.yml
+
+- hosts: all
+  become: no
+  gather_facts: no
+  tasks:
+  - copy: src=./ss/shadowsocks.json dest=/root/install/ss/
+  - shell: ./start-shadowsocks.sh chdir=/root/install

@@ -1,11 +1,9 @@
 ---
 
+- include: fetch-scripts.yml
+
 - hosts: all
   become: no
   gather_facts: no
   tasks:
-  - name: fetch from git
-    git:
-      repo: http://192.168.1.22:8022/deployment/install-centos-server.git
-      dest: /root/install
   - shell: ./install-docker-on-centos.sh chdir=/root/install

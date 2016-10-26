@@ -1,5 +1,7 @@
 #!/bin/bash
 
-#!/bin/bash
+if [ -f /var/run/shadowsocks.pid ]; then
+    sslocal -c ss/shadowsocks.json -d stop
+fi
 
-sslocal -c ss/shadowsocks.json &
+sslocal -c ss/shadowsocks.json -d start

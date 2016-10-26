@@ -8,4 +8,4 @@
     git:
       repo: http://192.168.1.22:8022/deployment/install-centos-server.git
       dest: /root/install
-  - script: /root/install/clap.sh # install-docker-on-centos.sh
+  - shell: ./install-docker-on-centos.sh chdir=/root/install

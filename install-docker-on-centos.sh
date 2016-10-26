@@ -28,8 +28,8 @@ if [ $(lsblk | grep sdb | wc -l) == 0 ]; then
 	exit
 fi
 
-lvremove /dev/mapper/docker--vg-docker--pool
-vgremove docker-vg
+yes | lvremove /dev/mapper/docker--vg-docker--pool
+yes | vgremove docker-vg
 
 if [ $(lvs | grep docker-pool | grep docker-vg | wc -l) == 0 ]; then
 log "setup direct disk mode"

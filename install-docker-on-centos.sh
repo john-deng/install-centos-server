@@ -76,9 +76,29 @@ yum makecache
 yum -y install docker-${DOCKER_VERSION}
 
 #log "replacing docker.service"
-yes | cp docker.service /usr/lib/systemd/system/
-yes | cp docker-storage /etc/sysconfig/
+#yes | cp docker.service /usr/lib/systemd/system/
+#yes | cp docker-storage /etc/sysconfig/
 yes | cp docker /etc/sysconfig/
+
+if [ $(cat /etc/sysconfig/docker-storage-setup | grep docker-vg | wc -l) == 0  ]; then
+
+tee /etc/sysconfig/docker-storage-setup <<-'EOF'
+VG=docker-vg
+SETUP_LVM_THIN_POOL=yes
+DATA_SIZE=70%FREE
+EOF
+
+fi # if [ $(cat /etc/sysconfig/docker-storage-setup | grep docker-vg | wc -l) == 0  ]; then
+
+log "running docker-storage-setup ..."
+systemctl stop docker
+
+rm -rf /var/lib/docker
+
+/usr/bin/docker-storage-setup
+
+lvs
+
 
 log "reload docker.service"
 systemctl daemon-reload
@@ -93,24 +113,6 @@ if [ "$?" != 0 ]; then
 	log "Failed to start docker"
 	exit
 fi
-
-if [ $(cat /etc/sysconfig/docker-storage-setup | grep docker-vg | wc -l) == 0  ]; then
-
-tee /etc/sysconfig/docker-storage-setup <<-'EOF'
-VG=docker-vg
-SETUP_LVM_THIN_POOL=yes
-DATA_SIZE=70%FREE
-EOF
-
-systemctl stop docker
-
-rm -rf /var/lib/docker
-
-/usr/bin/docker-storage-setup
-
-lvs
-
-fi # if [ $(cat /etc/sysconfig/docker-storage-setup | grep docker-vg | wc -l) == 0  ]; then
 
 log "show docker info"
 docker info

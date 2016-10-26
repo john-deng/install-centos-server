@@ -1,7 +1,5 @@
 ---
 
-- include: fetch-scripts.yml
-
 - hosts: all
   become: no
   gather_facts: no

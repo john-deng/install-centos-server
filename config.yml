@@ -4,4 +4,5 @@
   become: no
   gather_facts: no
   tasks:
-  - shell: ./install-docker-on-centos.sh chdir=/root/install
+  - shell: ./install-common-tools.sh chdir=/root/install
+  - shell: ./install-docker-on-centos.sh all storage=vdb chdir=/root/install

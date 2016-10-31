@@ -12,6 +12,7 @@ if [ $(more /etc/redhat-release | grep "CentOS Linux release 7" | wc -l) == 0 ];
 	exit
 fi
 
+systemctl disable firewalld
 if [ $(systemctl status firewalld | grep "firewalld.service; disabled;" | wc -l) == 0 ]; then
 	log "please make sure firewall is disabled, run systemctl status firewalld to check."
 	exit
@@ -106,6 +107,8 @@ if [ ! -d ./openshift-ansible ]; then
 fi
 
 ansible all -m ping
+
+exit
 
 ansible-playbook openshift-ansible/playbooks/byo/config.yml
 

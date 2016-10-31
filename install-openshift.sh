@@ -34,6 +34,9 @@ fi
 
 yum -y install wget git net-tools bind-utils iptables-services bridge-utils bash-completion pyOpenSSL NetworkManager
 
+systemctl enable NetworkManager.service
+systemctl start NetworkManager
+
 if [ $(systemctl status NetworkManager | grep "active (running)" | wc -l) == 0 ]; then
 	log "please make sure NetworkManager is running."
 	exit
@@ -58,7 +61,7 @@ master.openshift.vpclub.local
  
 # host group for etcd
 [etcd]
-etcd.openshift.vpclub.local
+master.openshift.vpclub.local
  
 # host group for nodes, includes region info
 [nodes]
@@ -67,36 +70,38 @@ EOF
 
 log "iterate servers"
 
-ANSIBLE_SERVERS=
-cat config/cluster-ip.conf | { while read server; do
-	echo $server
-	IP=$(echo $server | awk '{print $1;}')
-	SERVER_NAME=$(echo $server | awk '{print $2;}')
-	HOST_ITEM="${IP} ${SERVER_NAME}.openshift.${NAMESPACE}.local"
-	echo $HOST_ITEM
-
-	echo "add ${IP} ${SERVER_NAME} to trust list"
-	if [ $(cat /etc/hosts | grep "${HOST_ITEM}" | wc -l) == 0 ]; then
-		echo $HOST_ITEM >> /etc/hosts
-	fi
-
-	ssh-copy-id -i ${HOME}/.ssh/id_rsa.pub ${IP}
-
-	if [ $(echo $SERVER_NAME | grep node | wc -l) == 1 ];
-		log "added node to /etc/ansible/hosts"
-		echo "${SERVER_NAME}.openshift.${NAMESPACE}.local openshift_node_labels=\"{'region': 'primary', 'zone': '$SERVER_NAME'}\"" >> /etc/ansible/hosts
-    fi
-        
-    done
-} 
+#ANSIBLE_SERVERS=
+#cat config/cluster-ip.conf | { while read server; do
+#	echo $server
+#	IP=$(echo $server | awk '{print $1;}')
+#	SERVER_NAME=$(echo $server | awk '{print $2;}')
+#	HOST_ITEM="${IP} ${SERVER_NAME}.openshift.${NAMESPACE}.local"
+#	echo $HOST_ITEM
+#
+#	echo "add ${IP} ${SERVER_NAME} to trust list"
+#	if [ $(cat /etc/hosts | grep "${HOST_ITEM}" | wc -l) == 0 ]; then
+#		echo $HOST_ITEM >> /etc/hosts
+#	fi
+#
+#	ssh-copy-id -i ${HOME}/.ssh/id_rsa.pub ${IP}
+#
+#	if [ $(echo $SERVER_NAME | grep node | wc -l) == 1 ];
+#		log "added node to /etc/ansible/hosts"
+#		echo "${SERVER_NAME}.openshift.${NAMESPACE}.local openshift_node_labels=\"{'region': 'primary', 'zone': '$SERVER_NAME'}\"" >> /etc/ansible/hosts
+#    fi
+#        
+#    done
+#} 
 
 if [ ! -d ./openshift-ansible ]; then
-	proxychains4 git clone https://github.com/openshift/openshift-ansible
+	git clone https://github.com/openshift/openshift-ansible
 fi
 
 ansible all -m ping
 
 ansible-playbook openshift-ansible/playbooks/byo/config.yml
+
+oadm policy add-cluster-role-to-user cluster-admin admin --config=/etc/origin/master/admin.kubeconfig
 
 oc get nodes
 

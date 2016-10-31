@@ -57,7 +57,7 @@ etcd
 ansible_ssh_user=root
 deployment_type=origin
 openshift_release=v1.4
-#openshift_image_tag=v1.4.0-alpha.0
+openshift_image_tag=v1.4.0-alpha.0
 openshift_install_examples=true
 
 osm_use_cockpit=true
@@ -108,7 +108,7 @@ fi
 
 ansible all -m ping
 
-exit
+#exit
 
 ansible-playbook openshift-ansible/playbooks/byo/config.yml
 

@@ -18,12 +18,12 @@ function remove_docker() {
 	log "docker was removed"
 }
 
-STORAGE_DEVICE=$storage
+STORAGE_DEVICE=/dev/$storage
 if [ "$STORAGE_DEVICE" == "" ]; then
 	STORAGE_DEVICE=/dev/sdb
 fi	
 
-if [ $(lsblk | grep sdb | wc -l) == 0 ]; then
+if [ $(lsblk | grep ${storage} | wc -l) == 0 ]; then
 	log "${STORAGE_DEVICE} is not exist!"
 	exit
 fi

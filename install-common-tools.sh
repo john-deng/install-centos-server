@@ -16,4 +16,7 @@ log "install zsh and oh-my-zsh"
 yum -y install zsh
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 
+
+yum -y install vim git ansible
+
 log "installed common tools"

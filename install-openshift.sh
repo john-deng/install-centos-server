@@ -12,6 +12,7 @@ if [ $(more /etc/redhat-release | grep "CentOS Linux release 7" | wc -l) == 0 ];
 	exit
 fi
 
+systemctl disable firewalld
 if [ $(systemctl status firewalld | grep "firewalld.service; disabled;" | wc -l) == 0 ]; then
 	log "please make sure firewall is disabled, run systemctl status firewalld to check."
 	exit
@@ -34,6 +35,9 @@ fi
 
 yum -y install wget git net-tools bind-utils iptables-services bridge-utils bash-completion pyOpenSSL NetworkManager
 
+systemctl enable NetworkManager.service
+systemctl start NetworkManager
+
 if [ $(systemctl status NetworkManager | grep "active (running)" | wc -l) == 0 ]; then
 	log "please make sure NetworkManager is running."
 	exit
@@ -52,7 +56,15 @@ etcd
 [OSEv3:vars]
 ansible_ssh_user=root
 deployment_type=origin
- 
+openshift_release=v1.4
+openshift_image_tag=v1.4.0-alpha.0
+openshift_install_examples=true
+
+osm_use_cockpit=true
+osm_cockpit_plugins=['cockpit-kubernetes']
+
+containerized=true
+
 [masters]
 master.openshift.vpclub.local
  
@@ -97,6 +109,8 @@ fi
 ansible all -m ping
 
 ansible-playbook openshift-ansible/playbooks/byo/config.yml
+
+oadm policy add-cluster-role-to-user cluster-admin admin --config=/etc/origin/master/admin.kubeconfig
 
 oc get nodes
 

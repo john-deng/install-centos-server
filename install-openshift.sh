@@ -55,17 +55,25 @@ etcd
 [OSEv3:vars]
 ansible_ssh_user=root
 deployment_type=origin
- 
+openshift_release=v1.4
+#openshift_image_tag=v1.4.0-alpha.0
+openshift_install_examples=true
+
+osm_use_cockpit=true
+osm_cockpit_plugins=['cockpit-kubernetes']
+
+containerized=true
+
 [masters]
-master.openshift.vpclub.local
+master.openshift.vpclub.us
  
 # host group for etcd
 [etcd]
-master.openshift.vpclub.local
+master.openshift.vpclub.us
  
 # host group for nodes, includes region info
 [nodes]
-master.openshift.vpclub.local openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+master.openshift.vpclub.us openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
 EOF
 
 log "iterate servers"
@@ -106,3 +114,4 @@ oadm policy add-cluster-role-to-user cluster-admin admin --config=/etc/origin/ma
 oc get nodes
 
 log "Done"
+

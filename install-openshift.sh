@@ -12,13 +12,16 @@ if [ $(more /etc/redhat-release | grep "CentOS Linux release 7" | wc -l) == 0 ];
 	exit
 fi
 
-systemctl disable firewalld
-if [ $(systemctl status firewalld | grep "firewalld.service; disabled;" | wc -l) == 0 ]; then
+systemctl stop firewalld
+systemctl disable firewalld.service
+if [ $(systemctl status firewalld | grep "firewalld.service; disabled;" | wc -l) == 0 ] && [ $(systemctl status firewalld | grep "Active: inactive" | wc -l) == 0 ] ; then
 	log "please make sure firewall is disabled, run systemctl status firewalld to check."
 	exit
 fi
 
-if [ $(systemctl status iptables | grep "Active: inactive (dead)" | wc -l) == 0 ]; then
+systemctl stop iptables
+systemctl disable iptables.service
+if [ $(systemctl status iptables | grep "Active: inactive" | wc -l) == 0 ] && [ $(systemctl status iptables | grep "Active: failed" | wc -l) == 0 ]; then
 	log "please disabled iptables first"
 	exit
 fi
@@ -56,8 +59,9 @@ etcd
 [OSEv3:vars]
 ansible_ssh_user=root
 deployment_type=origin
-openshift_release=v1.4
-openshift_image_tag=v1.4.0-alpha.0
+openshift_release=v1.4.0-alpha.1
+#openshift_release=v1.3.1
+openshift_image_tag=v1.4.0-alpha.1
 openshift_install_examples=true
 
 osm_use_cockpit=true
@@ -65,16 +69,26 @@ osm_cockpit_plugins=['cockpit-kubernetes']
 
 containerized=true
 
+openshift_master_default_subdomain=47.89.178.33.nip.io
+
+openshift_hosted_registry_storage_kind=nfs
+openshift_hosted_registry_storage_access_modes=['ReadWriteMany']
+openshift_hosted_registry_storage_host=172.22.0.1
+openshift_hosted_registry_storage_nfs_directory=/data/nfs
+openshift_hosted_registry_storage_volume_name=osv
+openshift_hosted_registry_storage_volume_size=20Gi
+
 [masters]
-master.openshift.vpclub.us
+devops.vpclub.cn
  
 # host group for etcd
 [etcd]
-master.openshift.vpclub.us
+devops.vpclub.cn
  
 # host group for nodes, includes region info
 [nodes]
-master.openshift.vpclub.us openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+devops.vpclub.cn openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+#120.76.22.195 openshift_node_labels="{'region': 'infra', 'zone': 'southcn'}"
 EOF
 
 log "iterate servers"
@@ -113,6 +127,12 @@ ansible all -m ping
 ansible-playbook openshift-ansible/playbooks/byo/config.yml
 
 oadm policy add-cluster-role-to-user cluster-admin admin --config=/etc/origin/master/admin.kubeconfig
+oadm manage-node devops.vpclub.cn --schedulable=true
+oc new-project dev --display-name="Tasks - Dev"
+oc new-project stage --display-name="Tasks - Stage"
+oc new-project cicd --display-name="CI/CD"
+oc policy add-role-to-user edit system:serviceaccount:cicd:default -n dev
+oc policy add-role-to-user edit system:serviceaccount:cicd:default -n stage
 
 oc get nodes
 

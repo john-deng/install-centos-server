@@ -1,3 +1,4 @@
 proxychains-ng/
+openshift-cd-demo/
 openshift-ansible/
 *.log

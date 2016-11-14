@@ -71,12 +71,12 @@ containerized=true
 
 openshift_master_default_subdomain=47.89.178.33.nip.io
 
-openshift_hosted_registry_storage_kind=nfs
-openshift_hosted_registry_storage_access_modes=['ReadWriteMany']
-openshift_hosted_registry_storage_host=172.22.0.1
-openshift_hosted_registry_storage_nfs_directory=/data/nfs
-openshift_hosted_registry_storage_volume_name=osv
-openshift_hosted_registry_storage_volume_size=20Gi
+#openshift_hosted_registry_storage_kind=nfs
+#openshift_hosted_registry_storage_access_modes=['ReadWriteMany']
+#openshift_hosted_registry_storage_host=172.22.0.1
+#openshift_hosted_registry_storage_nfs_directory=/data/nfs
+#openshift_hosted_registry_storage_volume_name=registry
+#openshift_hosted_registry_storage_volume_size=20Gi
 
 [masters]
 devops.vpclub.cn
@@ -131,6 +131,7 @@ oadm manage-node devops.vpclub.cn --schedulable=true
 oc new-project dev --display-name="Tasks - Dev"
 oc new-project stage --display-name="Tasks - Stage"
 oc new-project cicd --display-name="CI/CD"
+oc policy add-role-to-user edit system:serviceaccount:cicd:default -n cicd
 oc policy add-role-to-user edit system:serviceaccount:cicd:default -n dev
 oc policy add-role-to-user edit system:serviceaccount:cicd:default -n stage
 
